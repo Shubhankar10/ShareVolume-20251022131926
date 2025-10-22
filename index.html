@@ -1,0 +1,61 @@
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="share-title">Citigroup</title>
+  <style>
+    #share-entity-name { font-size: 2rem; }
+    #share-max-value, #share-min-value { font-size: 1.5rem; font-weight: bold; }
+  </style>
+  <script>
+    const CIK = location.search ? location.search.slice(4) : '0000831001';
+
+    async function fetchData() {
+      const response = await fetch(`https://data.sec.gov/api/xbrl/companyconcept/${CIK}/dei/EntityCommonStockSharesOutstanding.json`);
+      const data = await response.json();
+
+      if (!data || !data.entityName || !data.entityName.includes('Citigroup') || !data.max || !data.min) {
+        throw new Error('Invalid data received');
+      }
+
+      document.title = data.entityName;
+      document.getElementById('share-entity-name').textContent = data.entityName;
+      document.getElementById('share-max-value').textContent = data.max.val;
+      document.getElementById('share-max-fy').textContent = data.max.fy;
+      document.getElementById('share-min-value').textContent = data.min.val;
+      document.getElementById('share-min-fy').textContent = data.min.fy;
+
+      if (location.search && location.search !== `?CIK=${data.entityName.replace(/ /g, '%20')}`) {
+        window.history.pushState({ path: location.pathname }, data.entityName, `?CIK=${data.entityName.replace(/ /g, '%20')}`);
+        fetchData();
+      }
+    }
+
+    fetchData();
+  </script>
+</head>
+<body>
+  <h1 id="share-entity-name"></h1>
+  <div>
+    <p><strong id="share-max-fy">Max:</strong> <span id="share-max-value"></span></p>
+    <p><strong id="share-min-fy">Min:</strong> <span id="share-min-value"></span></p>
+  </div>
+  <script>
+    fetch('https://data.sec.gov/api/xbrl/companyconcept/CIK0000831001/dei/EntityCommonStockSharesOutstanding.json')
+      .then(response => response.json())
+      .then(data => {
+        if (!data || !data.entityName || !data.entityName.includes('Citigroup') || !data.max || !data.min) {
+          throw new Error('Invalid data received');
+        }
+
+        document.title = data.entityName;
+        document.getElementById('share-entity-name').textContent = data.entityName;
+        document.getElementById('share-max-value').textContent = data.max.val;
+        document.getElementById('share-max-fy').textContent = data.max.fy;
+        document.getElementById('share-min-value').textContent = data.min.val;
+        document.getElementById('share-min-fy').textContent = data.min.fy;
+      })
+      .catch(error => console.error(error));
+  </script>
+</body>
+</html>
